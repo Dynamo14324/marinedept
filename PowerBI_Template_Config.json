@@ -1,0 +1,253 @@
+{
+  "template_metadata": {
+    "name": "Marine Department Audit Dashboard",
+    "version": "1.0",
+    "created_by": "Senior Power BI Developer",
+    "description": "Executive Management Dashboard for HSQE Audit Performance Monitoring",
+    "company": "Ishima Pte. Ltd.",
+    "target_audience": "Executive Management"
+  },
+  "data_sources": [
+    {
+      "name": "Marine_Audit_Data",
+      "type": "CSV",
+      "file": "Marine_Audit_Data_Combined.csv",
+      "description": "Consolidated audit logs from 2023-2025"
+    },
+    {
+      "name": "Marine_Categories",
+      "type": "CSV",
+      "file": "Marine_Categories_Combined.csv",
+      "description": "Deficiency categories and trend data"
+    }
+  ],
+  "tables": [
+    {
+      "name": "Fact_Audits",
+      "source": "Marine_Audit_Data",
+      "columns": [
+        "Vessel",
+        "Auditor",
+        "Place",
+        "IA_Date",
+        "IA_Report_Date",
+        "IA_NC",
+        "IA_Obs",
+        "SI_Date",
+        "SI_Report_Date",
+        "SI_NC",
+        "SI_Obs",
+        "Fleet",
+        "Year"
+      ]
+    },
+    {
+      "name": "Fact_Categories",
+      "source": "Marine_Categories",
+      "columns": [
+        "Vessel",
+        "Category",
+        "Count",
+        "Year",
+        "Fleet"
+      ]
+    },
+    {
+      "name": "Dim_Date",
+      "type": "Calculated",
+      "description": "Calendar dimension for time-based analysis"
+    },
+    {
+      "name": "Dim_Vessels",
+      "type": "Calculated",
+      "description": "Unique vessel list with fleet classification"
+    },
+    {
+      "name": "Dim_Auditors",
+      "type": "Calculated",
+      "description": "Unique auditor/superintendent list"
+    }
+  ],
+  "relationships": [
+    {
+      "from_table": "Fact_Audits",
+      "from_column": "Vessel",
+      "to_table": "Dim_Vessels",
+      "to_column": "Vessel",
+      "type": "Many-to-One"
+    },
+    {
+      "from_table": "Fact_Audits",
+      "from_column": "Auditor",
+      "to_table": "Dim_Auditors",
+      "to_column": "Auditor",
+      "type": "Many-to-One"
+    },
+    {
+      "from_table": "Fact_Audits",
+      "from_column": "IA_Date",
+      "to_table": "Dim_Date",
+      "to_column": "Date",
+      "type": "Many-to-One"
+    }
+  ],
+  "dax_measures": {
+    "audit_counts": {
+      "Total_Audits": "COUNTROWS(Fact_Audits)",
+      "Internal_Audits": "CALCULATE(COUNTROWS(Fact_Audits), NOT(ISBLANK(Fact_Audits[IA_Date])))",
+      "Safety_Inspections": "CALCULATE(COUNTROWS(Fact_Audits), NOT(ISBLANK(Fact_Audits[SI_Date])))"
+    },
+    "nc_metrics": {
+      "Total_NCs": "SUM(Fact_Audits[IA_NC]) + SUM(Fact_Audits[SI_NC])",
+      "Total_Observations": "SUM(Fact_Audits[IA_Obs]) + SUM(Fact_Audits[SI_Obs])",
+      "NC_per_Audit": "DIVIDE([Total_NCs], [Total_Audits], 0)",
+      "NC_Rate_Target": "0.10"
+    },
+    "performance": {
+      "Target_Achievement": "IF([NC_per_Audit] <= [NC_Rate_Target], \"On Track\", \"Needs Attention\")",
+      "YoY_NC_Change": "VAR PrevYearNC = CALCULATE([NC_per_Audit], SAMEPERIODLASTYEAR(Dim_Date[Date])) RETURN DIVIDE([NC_per_Audit] - PrevYearNC, PrevYearNC, 0)",
+      "Fleet_Performance_Index": "DIVIDE(CALCULATE([Total_NCs], Fact_Audits[Fleet] = \"Tanker\"), CALCULATE([Total_NCs], Fact_Audits[Fleet] = \"Dry\"), 1)"
+    },
+    "category_analysis": {
+      "NCs_by_Category": "SUM(Fact_Categories[Count])",
+      "Top_Deficiency_Category": "TOPN(1, VALUES(Fact_Categories[Category]), [NCs_by_Category])"
+    }
+  },
+  "pages": [
+    {
+      "name": "Executive Overview",
+      "layout": "Grid",
+      "visuals": [
+        {
+          "type": "Card",
+          "title": "Total Audits 2024",
+          "measure": "Total_Audits",
+          "position": "Top-Left"
+        },
+        {
+          "type": "Card",
+          "title": "NC Rate",
+          "measure": "NC_per_Audit",
+          "format": "0.00",
+          "position": "Top-Center"
+        },
+        {
+          "type": "Card",
+          "title": "Total Non-Conformities",
+          "measure": "Total_NCs",
+          "position": "Top-Right"
+        },
+        {
+          "type": "Clustered Column Chart",
+          "title": "Fleet Comparison: Tanker vs. Dry",
+          "x_axis": "Fleet",
+          "y_axis": "Total_NCs",
+          "position": "Middle-Full"
+        },
+        {
+          "type": "Line Chart",
+          "title": "NC Trend (2022-2024)",
+          "x_axis": "Year",
+          "y_axis": "NC_per_Audit",
+          "position": "Bottom-Full"
+        }
+      ]
+    },
+    {
+      "name": "Audit Performance",
+      "layout": "Grid",
+      "visuals": [
+        {
+          "type": "Stacked Column Chart",
+          "title": "Quarterly Audit Distribution 2024",
+          "x_axis": "Quarter",
+          "y_axis": "Internal_Audits, Safety_Inspections",
+          "position": "Top-Full"
+        },
+        {
+          "type": "Bar Chart",
+          "title": "Auditor Performance",
+          "x_axis": "Auditor",
+          "y_axis": "Total_Audits",
+          "position": "Middle-Left"
+        },
+        {
+          "type": "Table",
+          "title": "Audit Summary by Vessel",
+          "columns": "Vessel, Total_Audits, Total_NCs, NC_per_Audit",
+          "position": "Middle-Right"
+        }
+      ]
+    },
+    {
+      "name": "Deficiency Analysis",
+      "layout": "Grid",
+      "visuals": [
+        {
+          "type": "Horizontal Bar Chart",
+          "title": "Non-Conformities by Category",
+          "x_axis": "NCs_by_Category",
+          "y_axis": "Category",
+          "position": "Top-Full"
+        },
+        {
+          "type": "Clustered Column Chart",
+          "title": "Category Trends (2022-2024)",
+          "x_axis": "Year",
+          "y_axis": "NCs_by_Category",
+          "series": "Category",
+          "position": "Bottom-Full"
+        }
+      ]
+    },
+    {
+      "name": "Compliance & Schedule",
+      "layout": "Grid",
+      "visuals": [
+        {
+          "type": "Matrix",
+          "title": "Audit Schedule Status",
+          "rows": "Vessel",
+          "columns": "Month",
+          "values": "Audit_Status",
+          "position": "Full"
+        }
+      ]
+    }
+  ],
+  "slicers": [
+    {
+      "name": "Year Slicer",
+      "field": "Fact_Audits[Year]",
+      "type": "Dropdown",
+      "position": "Top-Left"
+    },
+    {
+      "name": "Fleet Slicer",
+      "field": "Fact_Audits[Fleet]",
+      "type": "Buttons",
+      "position": "Top-Center"
+    },
+    {
+      "name": "Auditor Slicer",
+      "field": "Fact_Audits[Auditor]",
+      "type": "Dropdown",
+      "position": "Top-Right"
+    }
+  ],
+  "formatting": {
+    "color_scheme": {
+      "primary": "#005596",
+      "secondary": "#58595B",
+      "success": "#28A745",
+      "alert": "#DC3545",
+      "neutral": "#F5F5F5"
+    },
+    "fonts": {
+      "header": "Segoe UI, 18pt, Bold",
+      "title": "Segoe UI, 14pt, Bold",
+      "label": "Segoe UI, 11pt, Regular"
+    },
+    "theme": "Corporate Blue"
+  }
+}

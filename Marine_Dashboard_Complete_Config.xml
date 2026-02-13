@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PowerBIDashboard>
+  <Metadata>
+    <Name>Marine Department Audit Dashboard - Production Ready</Name>
+    <Version>1.0</Version>
+    <Company>Ishima Pte. Ltd.</Company>
+    <Purpose>Executive Management - Audit Performance Monitoring</Purpose>
+    <CreatedDate>2025-02-13</CreatedDate>
+  </Metadata>
+
+  <DataSources>
+    <ExcelFile>
+      <Name>Marine_Audit_Data_2024</Name>
+      <Path>2024-IAnSISCHEDULE n Performances.xlsx</Path>
+      <Sheets>
+        <Sheet name="Dry Data" type="FactTable" />
+        <Sheet name="Tanker Data" type="FactTable" />
+        <Sheet name="Int.Aud. Category" type="DimensionTable" />
+        <Sheet name="Saf.Insp.category" type="DimensionTable" />
+        <Sheet name="IA-SI DRY" type="ScheduleTable" />
+        <Sheet name="IA-SI TANKER" type="ScheduleTable" />
+      </Sheets>
+    </ExcelFile>
+  </DataSources>
+
+  <Pages>
+    <Page name="Executive Overview" layout="Grid">
+      <Description>High-level KPIs and fleet performance metrics</Description>
+      
+      <Visual id="1">
+        <Title>External Audit Fleet Comparison (2022-2024)</Title>
+        <Type>Clustered Column Chart with Trend Line</Type>
+        <XAxis>Year</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="No of NC" color="#00B4D8" />
+          <Series name="No. of Vessels" color="#003D82" />
+          <Series name="No. of Audits" color="#A8A8A8" />
+          <TrendLine name="NC x Insp" color="#FF0000" />
+        </Series>
+        <Position>Top-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Legend>Bottom</Legend>
+      </Visual>
+
+      <Visual id="2">
+        <Title>External Audit Fleet (ISM) - 2024 Quarterly</Title>
+        <Type>Stacked Column Chart with Trend Line</Type>
+        <XAxis>Quarter</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="No. of Vessels" color="#0078D4" />
+          <Series name="No of NC" color="#FF9500" />
+          <Series name="No. of Audits" color="#A8A8A8" />
+          <TrendLine name="Average NC per Audits" color="#FF0000" />
+        </Series>
+        <Position>Middle-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Table>Yes</Table>
+      </Visual>
+
+      <Visual id="3">
+        <Title>External (ISM) Audit by Categories - Fleet Comparison (2022-2024)</Title>
+        <Type>Grouped Column Chart</Type>
+        <XAxis>Category</XAxis>
+        <YAxis>NC Rate</YAxis>
+        <Series>
+          <Series name="2022" color="#0078D4" />
+          <Series name="2023" color="#004B87" />
+          <Series name="2024" color="#004B87" />
+        </Series>
+        <Position>Bottom-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Legend>Bottom</Legend>
+      </Visual>
+    </Page>
+
+    <Page name="Tanker Fleet Analysis" layout="Grid">
+      <Description>Detailed tanker fleet audit performance</Description>
+      
+      <Visual id="4">
+        <Title>External Audit (Tanker Comparison - ISM) 2022-2024</Title>
+        <Type>Clustered Column Chart with Trend Line</Type>
+        <XAxis>Year</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="No of NC" color="#00B4D8" />
+          <Series name="No. of Vessels" color="#003D82" />
+          <Series name="No. of Audits" color="#A8A8A8" />
+          <TrendLine name="NC x Insp" color="#FF0000" />
+        </Series>
+        <Position>Top-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Table>Yes</Table>
+      </Visual>
+
+      <Visual id="5">
+        <Title>External Audit Tanker (ISM) - 2024 Quarterly</Title>
+        <Type>Stacked Column Chart with Trend Line</Type>
+        <XAxis>Quarter</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="No. of Vessels" color="#0078D4" />
+          <Series name="No of NC" color="#FF9500" />
+          <Series name="No. of Audits" color="#A8A8A8" />
+          <TrendLine name="Average NC per Audits" color="#FF0000" />
+        </Series>
+        <Position>Bottom-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Table>Yes</Table>
+      </Visual>
+    </Page>
+
+    <Page name="Dry Fleet Analysis" layout="Grid">
+      <Description>Detailed dry fleet audit performance</Description>
+      
+      <Visual id="6">
+        <Title>External Audit (Dry Comparison - ISM) 2022-2024</Title>
+        <Type>Clustered Column Chart with Trend Line</Type>
+        <XAxis>Year</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="No of NC" color="#00B4D8" />
+          <Series name="No. of Vessels" color="#003D82" />
+          <Series name="No. of Audits" color="#A8A8A8" />
+          <TrendLine name="NC x Insp" color="#FF0000" />
+        </Series>
+        <Position>Top-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Table>Yes</Table>
+      </Visual>
+
+      <Visual id="7">
+        <Title>External Audit DRY (ISM) - 2024 Quarterly</Title>
+        <Type>Stacked Column Chart with Trend Line</Type>
+        <XAxis>Quarter</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="No. of Vessels" color="#0078D4" />
+          <Series name="No of NC" color="#FF9500" />
+          <Series name="No. of Audits" color="#A8A8A8" />
+          <TrendLine name="Average NC per Audits" color="#FF0000" />
+        </Series>
+        <Position>Bottom-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Table>Yes</Table>
+      </Visual>
+    </Page>
+
+    <Page name="ISPS Audit Analysis" layout="Grid">
+      <Description>ISPS audit performance and trends</Description>
+      
+      <Visual id="8">
+        <Title>External Audit (Fleet Comparison - ISPS) 2022-2024</Title>
+        <Type>Clustered Column Chart with Trend Line</Type>
+        <XAxis>Year</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="No of NC" color="#003D82" />
+          <Series name="No. of Vessels" color="#00B4D8" />
+          <Series name="No. of Audits" color="#A8A8A8" />
+          <TrendLine name="NC x Insp" color="#FF0000" />
+        </Series>
+        <Position>Top-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Table>Yes</Table>
+      </Visual>
+
+      <Visual id="9">
+        <Title>External Audit FLEET (ISPS) - 2024 Quarterly</Title>
+        <Type>Stacked Column Chart with Trend Line</Type>
+        <XAxis>Quarter</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="No. of Vessels" color="#0078D4" />
+          <Series name="No of NC" color="#FF9500" />
+          <Series name="No. of Audits" color="#A8A8A8" />
+          <TrendLine name="Average NC per Audits" color="#FF0000" />
+        </Series>
+        <Position>Middle-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Table>Yes</Table>
+      </Visual>
+
+      <Visual id="10">
+        <Title>External (ISPS) Audit by Categories - Fleet Comparison (2022-2024)</Title>
+        <Type>Grouped Column Chart</Type>
+        <XAxis>Category</XAxis>
+        <YAxis>NC Rate</YAxis>
+        <Series>
+          <Series name="2022" color="#0078D4" />
+          <Series name="2023" color="#004B87" />
+          <Series name="2024" color="#004B87" />
+        </Series>
+        <Position>Bottom-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <Legend>Bottom</Legend>
+      </Visual>
+    </Page>
+
+    <Page name="Deficiency Analysis" layout="Grid">
+      <Description>Detailed analysis of non-conformities by category</Description>
+      
+      <Visual id="11">
+        <Title>Non-Conformities by Category (Top 15)</Title>
+        <Type>Horizontal Bar Chart</Type>
+        <XAxis>Count</XAxis>
+        <YAxis>Category</YAxis>
+        <Color>#0078D4</Color>
+        <Position>Top-Full</Position>
+        <DataLabels>Yes</DataLabels>
+        <SortOrder>Descending</SortOrder>
+      </Visual>
+
+      <Visual id="12">
+        <Title>Category Trends (2022-2024)</Title>
+        <Type>Clustered Column Chart</Type>
+        <XAxis>Year</XAxis>
+        <YAxis>Count</YAxis>
+        <Series>
+          <Series name="Category 1" color="#0078D4" />
+          <Series name="Category 2" color="#004B87" />
+          <Series name="Category 3" color="#FF9500" />
+        </Series>
+        <Position>Bottom-Full</Position>
+        <DataLabels>Yes</DataLabels>
+      </Visual>
+    </Page>
+
+    <Page name="Schedule & Compliance" layout="Grid">
+      <Description>Audit schedule and compliance status</Description>
+      
+      <Visual id="13">
+        <Title>Annual Audit Schedule 2024</Title>
+        <Type>Matrix</Type>
+        <Rows>Vessel</Rows>
+        <Columns>Month</Columns>
+        <Values>Audit Status</Values>
+        <Position>Full</Position>
+        <ConditionalFormatting>Yes</ConditionalFormatting>
+      </Visual>
+    </Page>
+  </Pages>
+
+  <Slicers>
+    <Slicer id="S1">
+      <Name>Year Filter</Name>
+      <Field>Year</Field>
+      <Type>Dropdown</Type>
+      <Position>Top-Left</Position>
+      <DefaultValue>2024</DefaultValue>
+    </Slicer>
+    
+    <Slicer id="S2">
+      <Name>Fleet Type Filter</Name>
+      <Field>Fleet</Field>
+      <Type>Buttons</Type>
+      <Position>Top-Center</Position>
+      <Options>All, Tanker, Dry</Options>
+    </Slicer>
+    
+    <Slicer id="S3">
+      <Name>Auditor Filter</Name>
+      <Field>Auditor</Field>
+      <Type>Dropdown</Type>
+      <Position>Top-Right</Position>
+    </Slicer>
+  </Slicers>
+
+  <Formatting>
+    <ColorScheme>
+      <Primary>#005596</Primary>
+      <Secondary>#58595B</Secondary>
+      <Success>#28A745</Success>
+      <Alert>#DC3545</Alert>
+      <Neutral>#F5F5F5</Neutral>
+      <Blue>#0078D4</Blue>
+      <DarkBlue>#003D82</DarkBlue>
+      <Cyan>#00B4D8</Cyan>
+      <Orange>#FF9500</Orange>
+      <Grey>#A8A8A8</Grey>
+      <Red>#FF0000</Red>
+    </ColorScheme>
+    
+    <Fonts>
+      <PageTitle>Segoe UI, 24pt, Bold, #333333</PageTitle>
+      <VisualTitle>Segoe UI, 14pt, Bold, #333333</VisualTitle>
+      <AxisLabel>Segoe UI, 11pt, Regular, #333333</AxisLabel>
+      <DataLabel>Segoe UI, 10pt, Bold, #000000</DataLabel>
+      <Legend>Segoe UI, 10pt, Regular, #333333</Legend>
+    </Fonts>
+    
+    <Theme>Corporate Blue</Theme>
+    <PageSize>16:9</PageSize>
+    <Margins>10px</Margins>
+  </Formatting>
+
+  <InteractiveFeatures>
+    <CrossFiltering>Enabled</CrossFiltering>
+    <DrillThrough>Enabled</DrillThrough>
+    <Tooltips>Enabled</Tooltips>
+    <Bookmarks>Enabled</Bookmarks>
+    <AutoRefresh>
+      <Enabled>Yes</Enabled>
+      <Frequency>Daily</Frequency>
+      <Time>06:00 AM</Time>
+    </AutoRefresh>
+  </InteractiveFeatures>
+
+  <DAXMeasures>
+    <Measure name="Total_Audits">
+      <Formula>COUNTROWS(FactAudits)</Formula>
+      <Description>Total number of audits conducted</Description>
+    </Measure>
+    
+    <Measure name="Total_NCs">
+      <Formula>SUM(FactAudits[NC]) + SUM(FactAudits[Observations])</Formula>
+      <Description>Total non-conformities and observations</Description>
+    </Measure>
+    
+    <Measure name="NC_per_Audit">
+      <Formula>DIVIDE([Total_NCs], [Total_Audits], 0)</Formula>
+      <Description>Average non-conformities per audit</Description>
+    </Measure>
+    
+    <Measure name="Target_Achievement">
+      <Formula>IF([NC_per_Audit] &lt;= 0.10, "✓ On Track", "⚠ Needs Attention")</Formula>
+      <Description>Performance against KPI target</Description>
+    </Measure>
+  </DAXMeasures>
+</PowerBIDashboard>
