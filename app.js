@@ -11,13 +11,25 @@ const COLORS = {
 
 const CATEGORY_NC_KEYS = [
   { name: 'Internal Audit', keys: ['nc'] },
-  { name: 'Safety Inspection', keys: ['nc.'] },
-  { name: 'Navigational Audit', keys: ['nc.1'] },
-  { name: 'Environmental Audit', keys: ['nc.1'] },
-  { name: 'Cargo & Ballast', keys: ['nc.2'] },
-  { name: 'ISPS', keys: ['nc.3'] },
-  { name: 'Mooring', keys: ['nc.4'] }
+  { name: 'Safety Inspection', keys: ['nc_si'] },
+  { name: 'Navigational Audit', keys: ['nc_nav'] },
+  { name: 'Environmental Audit', keys: ['nc_env'] },
+  { name: 'Cargo & Ballast', keys: ['nc_cargo'] },
+  { name: 'ISPS', keys: ['nc_isps'] },
+  { name: 'Mooring', keys: ['nc_mooring'] }
 ];
+
+const COLUMN_ALIAS = {
+  nc: ['nc'],
+  nc_si: ['nc_si', 'nc.0', 'nc.1a'],
+  nc_nav: ['nc_nav', 'nc.1'],
+  nc_env: ['nc_env', 'nc.1.1', 'nc.1b'],
+  nc_cargo: ['nc_cargo', 'nc.2'],
+  nc_isps: ['nc_isps', 'nc.3'],
+  nc_mooring: ['nc_mooring', 'nc.4']
+};
+
+const DATA_SHEET_HINTS = ['dry data', 'tanker data', 'ia-si', 'planner', 'category'];
 
 const kpiGrid = document.getElementById('kpiGrid');
 const sourcePanel = document.getElementById('sourcePanel');
@@ -77,12 +89,14 @@ function buildModel(period) {
     }
 
     for (const sheet of state.filesByYear[yr].sheets) {
+      if (!isLikelyDataSheet(sheet)) continue;
       for (const row of sheet.rows) {
+        if (!isLikelyDataRow(row)) continue;
         const fleet = detectFleet(row, sheet.name);
         const dt = extractDate(row);
         if (period === 'H1' && dt && dt.getMonth() > 5) continue;
 
-        const nc = sumByKeyIncludes(row, ['nc']);
+        const nc = sumAllNc(row);
         const audits = countAuditEvents(row);
         const vessel = extractVessel(row);
 
@@ -98,7 +112,7 @@ function buildModel(period) {
         }
 
         for (const c of CATEGORY_NC_KEYS) {
-          const cNc = sumByLooseCategory(row, c.keys);
+          const cNc = sumCategoryNc(row, c.keys);
           categories[fleet][c.name][yr] += cNc;
           categories.Fleet[c.name][yr] += cNc;
         }
@@ -268,6 +282,20 @@ function detectFleet(row, sheet) {
   return 'Dry';
 }
 
+function isLikelyDataSheet(sheet) {
+  const name = String(sheet.name || '').toLowerCase();
+  if (DATA_SHEET_HINTS.some((h) => name.includes(h))) return true;
+  return sheet.rows && sheet.rows.length > 0;
+}
+
+function isLikelyDataRow(row) {
+  const keys = Object.keys(row).map((k) => normalizeKey(k));
+  const hasNC = keys.some((k) => k.startsWith('nc'));
+  const hasVessel = keys.some((k) => k.includes('vessel'));
+  const hasDate = keys.some((k) => k.includes('date'));
+  return hasNC || hasVessel || hasDate;
+}
+
 function countAuditEvents(row) {
   let c = 0;
   for (const [k, v] of Object.entries(row)) {
@@ -290,22 +318,36 @@ function extractDate(row) {
   return null;
 }
 
-function sumByKeyIncludes(row, includes) {
+function sumAllNc(row) {
+  const ncKeys = new Set([
+    ...COLUMN_ALIAS.nc,
+    ...COLUMN_ALIAS.nc_si,
+    ...COLUMN_ALIAS.nc_nav,
+    ...COLUMN_ALIAS.nc_env,
+    ...COLUMN_ALIAS.nc_cargo,
+    ...COLUMN_ALIAS.nc_isps,
+    ...COLUMN_ALIAS.nc_mooring
+  ]);
   return Object.entries(row).reduce((s, [k, v]) => {
-    const key = String(k).toLowerCase().replace(/\s+/g, '');
-    if (!includes.some(i => key.includes(i))) return s;
+    const key = normalizeKey(k);
+    if (!ncKeys.has(key)) return s;
     const n = Number(v);
     return Number.isFinite(n) ? s + n : s;
   }, 0);
 }
 
-function sumByLooseCategory(row, includes) {
+function sumCategoryNc(row, includes) {
+  const accepted = new Set(includes.flatMap((k) => COLUMN_ALIAS[k] || [k]));
   return Object.entries(row).reduce((s, [k, v]) => {
-    const key = String(k).toLowerCase();
-    if (!includes.some(i => key.includes(i))) return s;
+    const key = normalizeKey(k);
+    if (!accepted.has(key)) return s;
     const n = Number(v);
     return Number.isFinite(n) ? s + n : s;
   }, 0);
+}
+
+function normalizeKey(key) {
+  return String(key).toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9.]/g, '');
 }
 
 function detectNumericColumns(rows) {
