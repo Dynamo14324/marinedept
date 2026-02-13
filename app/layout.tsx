@@ -29,11 +29,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
-      <body className="antialiased">
+      <body className="antialiased bg-background">
         <Navigation />
-        <div className="min-h-screen">
+        <main className="md:ml-64 w-full">
           {children}
-        </div>
+        </main>
       </body>
     </html>
   )
