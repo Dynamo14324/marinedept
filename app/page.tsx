@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { BarChart3, TrendingUp, AlertCircle, Activity } from 'lucide-react'
 import { parseExcelFile, extractFinancialData, calculateMetrics } from '@/lib/excel-parser'
 import { parseCSVFile, normalizeCSVData } from '@/lib/csv-parser'
@@ -9,7 +9,9 @@ import { validateFinancialData } from '@/lib/data-validator'
 import { FileUpload } from '@/components/file-upload'
 import { KPICard } from '@/components/kpi-card'
 import { DataTable } from '@/components/data-table'
+import { FinancialChart } from '@/components/financial-chart'
 import { formatCurrency, formatNumber } from '@/lib/utils'
+import { generateSampleData, generateFinancialMetrics, SAMPLE_COMPLIANCE_INDICATORS } from '@/lib/sample-data'
 
 interface DashboardState {
   data: Record<string, unknown>[] | null
@@ -18,6 +20,7 @@ interface DashboardState {
   validation: { isValid: boolean; warnings: string[] } | null
   loading: boolean
   error: string | null
+  isUsingRealData: boolean
 }
 
 export default function Dashboard() {
@@ -28,7 +31,26 @@ export default function Dashboard() {
     validation: null,
     loading: false,
     error: null,
+    isUsingRealData: false,
   })
+
+  // Load sample data on mount
+  useEffect(() => {
+    const sampleData = generateSampleData(50)
+    const metrics = generateFinancialMetrics(sampleData)
+    
+    setState(prev => ({
+      ...prev,
+      data: sampleData,
+      fileName: 'Sample Data (2024)',
+      metrics: metrics as Record<string, number>,
+      validation: {
+        isValid: true,
+        warnings: [],
+      },
+      isUsingRealData: false,
+    }))
+  }, [])
 
   const handleFileSelect = useCallback(async (file: File) => {
     setState(prev => ({ ...prev, loading: true, error: null }))
@@ -67,6 +89,7 @@ export default function Dashboard() {
           warnings: validation.warnings,
         },
         loading: false,
+        isUsingRealData: true,
       }))
     } catch (error) {
       setState(prev => ({
@@ -139,8 +162,11 @@ export default function Dashboard() {
         <section className="mb-12">
           <div className="rounded-lg border border-border bg-secondary/30 p-8">
             <h2 className="text-xl font-semibold text-foreground mb-6">
-              Upload Data Files
+              Upload Your Data Files
             </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Upload a financial data file (Excel, CSV, or PDF) to replace the sample data
+            </p>
             <FileUpload
               onFileSelect={handleFileSelect}
               accept=".xlsx,.xls,.csv,.pdf"
@@ -160,6 +186,14 @@ export default function Dashboard() {
                 <div className="flex items-center gap-2 text-red-500">
                   <AlertCircle className="w-5 h-5" />
                   <span>{state.error}</span>
+                </div>
+              </div>
+            )}
+            {state.isUsingRealData && (
+              <div className="mt-4 p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                <div className="flex items-center gap-2 text-green-600">
+                  <Activity className="w-5 h-5" />
+                  <span>Successfully loaded {state.fileName}</span>
                 </div>
               </div>
             )}
@@ -192,48 +226,145 @@ export default function Dashboard() {
                 Key Performance Indicators
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {state.metrics && Object.entries(state.metrics).slice(0, 8).map(([key, value]) => (
-                  <KPICard
-                    key={key}
-                    title={key
-                      .replace(/_/g, ' ')
-                      .split(' ')
-                      .slice(0, 2)
-                      .join(' ')
-                      .toUpperCase()}
-                    value={
-                      typeof value === 'number'
-                        ? value > 1000
-                          ? formatCurrency(value)
-                          : formatNumber(value)
-                        : value
-                    }
-                    icon={<TrendingUp className="w-5 h-5" />}
-                    variant={key.includes('sum') ? 'accent' : 'default'}
-                  />
+                <KPICard
+                  title="TOTAL AMOUNT"
+                  value={state.metrics?.total ? formatCurrency(state.metrics.total) : '$0'}
+                  icon={<TrendingUp className="w-5 h-5" />}
+                  variant="accent"
+                />
+                <KPICard
+                  title="AVERAGE"
+                  value={state.metrics?.average ? formatCurrency(state.metrics.average) : '$0'}
+                  icon={<TrendingUp className="w-5 h-5" />}
+                  variant="default"
+                />
+                <KPICard
+                  title="MEDIAN"
+                  value={state.metrics?.median ? formatCurrency(state.metrics.median) : '$0'}
+                  icon={<TrendingUp className="w-5 h-5" />}
+                  variant="default"
+                />
+                <KPICard
+                  title="MAX VALUE"
+                  value={state.metrics?.max ? formatCurrency(state.metrics.max) : '$0'}
+                  icon={<TrendingUp className="w-5 h-5" />}
+                  variant="default"
+                />
+                <KPICard
+                  title="MIN VALUE"
+                  value={state.metrics?.min ? formatCurrency(state.metrics.min) : '$0'}
+                  icon={<TrendingUp className="w-5 h-5" />}
+                  variant="default"
+                />
+                <KPICard
+                  title="RECORD COUNT"
+                  value={state.metrics?.count ? formatNumber(state.metrics.count) : '0'}
+                  icon={<TrendingUp className="w-5 h-5" />}
+                  variant="default"
+                />
+              </div>
+            </section>
+
+            {/* Charts Section */}
+            <section className="mb-12">
+              <h2 className="text-xl font-semibold text-foreground mb-6">
+                Financial Analysis
+              </h2>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <FinancialChart
+                  data={state.data}
+                  type="bar"
+                  xKey="department"
+                  yKeys={['amount']}
+                  title="Amount by Department"
+                  height={350}
+                />
+                <FinancialChart
+                  data={state.data}
+                  type="pie"
+                  xKey="category"
+                  yKeys={['amount']}
+                  title="Spending by Category"
+                  height={350}
+                />
+              </div>
+            </section>
+
+            <section className="mb-12">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <FinancialChart
+                  data={state.data}
+                  type="line"
+                  xKey="date"
+                  yKeys={['amount']}
+                  title="Amount Trends Over Time"
+                  height={350}
+                />
+                <FinancialChart
+                  data={state.data}
+                  type="area"
+                  xKey="status"
+                  yKeys={['amount']}
+                  title="Amount by Status"
+                  height={350}
+                />
+              </div>
+            </section>
+
+            {/* Compliance Indicators */}
+            <section className="mb-12">
+              <h2 className="text-xl font-semibold text-foreground mb-6">
+                Compliance Status
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {SAMPLE_COMPLIANCE_INDICATORS.map((indicator) => (
+                  <div
+                    key={indicator.name}
+                    className="rounded-lg border border-border bg-secondary/20 p-4"
+                  >
+                    <h3 className="font-semibold text-foreground text-sm">{indicator.name}</h3>
+                    <p className="text-2xl font-bold text-accent my-2">{indicator.percentage}%</p>
+                    <p className="text-xs text-muted-foreground">{indicator.detail}</p>
+                    <div className="mt-3 h-1 bg-secondary rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${
+                          indicator.status === 'compliant'
+                            ? 'bg-green-500'
+                            : 'bg-yellow-500'
+                        }`}
+                        style={{ width: `${indicator.percentage}%` }}
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>
 
             {/* Data Table */}
-            <section>
+            <section className="mb-12">
               <h2 className="text-xl font-semibold text-foreground mb-6">
                 Data Review
               </h2>
               <DataTable
                 data={state.data}
                 onExport={handleExport}
-                maxRows={10}
+                maxRows={15}
               />
             </section>
 
             {/* File Info */}
-            <section className="mt-12 p-6 rounded-lg border border-border bg-secondary/20">
-              <h3 className="font-semibold text-foreground mb-3">File Information</h3>
+            <section className="p-6 rounded-lg border border-border bg-secondary/20">
+              <h3 className="font-semibold text-foreground mb-3">Data Source Information</h3>
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">File Name:</dt>
+                  <dt className="text-muted-foreground">Source:</dt>
                   <dd className="text-foreground">{state.fileName}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Status:</dt>
+                  <dd className="text-foreground">
+                    {state.isUsingRealData ? 'Real Data Loaded' : 'Sample Data'}
+                  </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Records Loaded:</dt>
@@ -250,21 +381,6 @@ export default function Dashboard() {
               </dl>
             </section>
           </>
-        )}
-
-        {!state.data && !state.loading && (
-          <div className="text-center py-12">
-            <div className="inline-flex items-center justify-center h-16 w-16 rounded-lg bg-accent/10 mb-4">
-              <BarChart3 className="w-8 h-8 text-accent" />
-            </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              No Data Loaded
-            </h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
-              Upload a financial data file (Excel, CSV, or PDF) to get started with
-              the IAnSI dashboard analysis.
-            </p>
-          </div>
         )}
       </main>
     </div>
