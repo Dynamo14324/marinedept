@@ -168,3 +168,10 @@ export async function exportAllCachedData(): Promise<Record<number, AuditYearDat
     throw error;
   }
 }
+
+/**
+ * Aliases for server action imports
+ */
+export const saveCachedData = saveParsedData;
+export const getCachedData = loadParsedData;
+export const getAvailableDataYears = getAvailableYears;
