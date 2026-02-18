@@ -6,27 +6,42 @@ A comprehensive Next.js 15 executive dashboard for the Marine Department featuri
 
 ### Features
 
-- **Dashboard**: Real-time KPI cards, metrics display, and financial overview
-- **Analytics Center**: Advanced charting (Line, Area, Bar, Pie), compliance dashboards, and data trends
-- **Data Processing**: Parse and validate Excel, CSV, and PDF files
-- **Financial Tables**: Interactive tables with sorting, filtering, searching, and export capabilities
-- **Document Management**: Upload, organize, and track financial documents
-- **Export Center**: Multi-format export (Excel, PDF, CSV), bulk operations, and scheduled exports
-- **Compliance Tracking**: Compliance indicators, audit trails, and recommendations
-- **Settings**: Organization configuration, data management, security, and backup options
+#### Core Dashboards
+- **Main Dashboard** (`/`): Real-time KPI cards, metrics display, and financial overview
+- **Audit Dashboard** (`/audits`): Marine audit performance with year filtering and comparison modes
+  - Fleet performance metrics (Dry vs Tanker)
+  - Non-conformity trends and analysis
+  - Quarterly breakdown charts
+  - Multi-year data comparison
+  - Chart export as PNG
+
+#### Data Management
+- **Admin Upload** (`/admin/upload`): Password-protected Excel file uploads
+- **Data Processing**: Parse and validate Excel files with multi-sheet support
+- **Financial Tables**: Interactive tables with sorting, filtering, and export
+- **Analytics Center**: Advanced charting (Line, Area, Bar, Pie), compliance dashboards
+- **Export Center**: Multi-format export (Excel, PDF, CSV), bulk operations
+
+#### Compliance & Security
+- **Compliance Tracking**: Audit indicators, trails, and recommendations
+- **Security**: Password-protected admin functions, secure file uploads
+- **Settings**: Organization configuration, data management, backup options
 
 ### Tech Stack
 
 - **Frontend**: Next.js 15, React 19, TypeScript
 - **Styling**: Tailwind CSS, Shadcn/UI components
-- **Data Visualization**: Recharts
+- **Charting**: 
+  - Chart.js (audit dashboard, image export)
+  - Recharts (financial analytics)
 - **File Processing**: 
-  - XLSX (Excel)
+  - XLSX (Excel parsing, multi-sheet support)
   - CSV (Papa Parse)
   - PDF (PDF.js)
-- **Export**: ExcelJS, jsPDF, jsPDF-AutoTable
+- **Export**: ExcelJS, jsPDF, jsPDF-AutoTable, Chart.js PNG export
 - **UI Components**: Radix UI (Tabs), Lucide Icons
-- **State Management**: React Hooks
+- **State Management**: React Hooks, Server Actions
+- **Deployment**: Vercel with GitHub integration
 
 ### Getting Started
 
@@ -76,36 +91,50 @@ pnpm start
 
 ```
 /app
+  /admin/upload         # Admin upload page (password-protected)
+  /audits               # Audit dashboard with year filtering
   /api
-    /process-file        # File upload and processing endpoint
-  /analytics             # Analytics center page
-  /documents             # Document management page
-  /export                # Export center page
-  /settings              # Settings configuration page
+    /process-file       # File upload and processing endpoint
+  /analytics            # Analytics center page
+  /documents            # Document management page
+  /export               # Export center page
+  /settings             # Settings configuration page
+  /actions
+    upload-excel.ts     # Server Actions for Excel upload
   page.tsx              # Main dashboard
   layout.tsx            # Root layout with navigation
   globals.css           # Global styles and design tokens
 
 /components
+  audit-dashboard.tsx   # Main audit dashboard component
+  audit-chart.tsx       # Chart.js wrapper with export
+  excel-upload-form.tsx # Excel upload form
   file-upload.tsx       # File upload component
   kpi-card.tsx          # Key performance indicator card
   data-table.tsx        # Basic data table
-  financial-table.tsx   # Advanced financial table with filtering
+  financial-table.tsx   # Advanced financial table
   financial-chart.tsx   # Multi-type charts (Line, Area, Bar, Pie)
-  compliance-dashboard.tsx  # Compliance indicators and tracking
-  bulk-operations.tsx   # Bulk export and selection component
   navigation.tsx        # Sidebar navigation
   /ui
     tabs.tsx            # Radix UI Tabs component
 
 /lib
-  excel-parser.ts       # Excel file parsing and metrics
+  excel-parser.ts       # Excel file parsing with multi-sheet support
+  chart-utils.ts        # Chart.js configurations and utilities
+  data-cache.ts         # Data caching and retrieval
   csv-parser.ts         # CSV file parsing
-  pdf-parser.ts         # PDF file parsing and text extraction
-  data-validator.ts     # Data validation and statistics
-  export-utils.ts       # Export functions (Excel, PDF, CSV)
-  utils.ts              # Common utility functions
+  pdf-parser.ts         # PDF file parsing
+  data-validator.ts     # Data validation
+  export-utils.ts       # Export functions
+  utils.ts              # Common utilities
   sample-data.ts        # Sample data generator
+
+/types
+  audit-data.ts         # Audit data TypeScript interfaces
+
+/data
+  /uploads              # Uploaded Excel files backup
+  /parsed               # Parsed and cached data in JSON
 ```
 
 ### Key Features Explained
@@ -131,6 +160,31 @@ The dashboard supports three file formats:
 - **PDF**: Professional reports with tables and formatting
 - **CSV**: Lightweight format for data import/export
 - **Bulk Operations**: Select multiple rows and export simultaneously
+
+#### Audit Dashboard
+
+The audit dashboard displays comprehensive analysis of marine department audits:
+
+**Features:**
+- **Year Selection**: View data for specific years (2022, 2023, 2024, etc.)
+- **Comparison Mode**: Side-by-side comparison of multiple years
+- **Fleet Analytics**: Separate dashboards for Dry and Tanker fleets
+- **Performance Metrics**: NC rates, audit counts, vessel counts
+- **Quarterly Breakdown**: Detailed quarterly analysis for each year
+- **Chart Export**: Download any chart as PNG for presentations
+
+**Data Upload:**
+1. Navigate to `/admin/upload`
+2. Select your Excel file (must contain year in filename)
+3. Enter admin password
+4. System automatically parses and caches data
+5. Dashboard updates instantly with new data
+
+**Excel File Requirements:**
+- Format: `.xlsx` or `.xls`
+- Filename: Must contain year (e.g., `2024-IAnSISCHEDULE.xlsx`)
+- Required sheets: "Dry Data", "Tanker Data", audit category sheets
+- Required columns: Vessel, Date, Auditor, NC, Observations
 
 #### Document Management
 
@@ -192,13 +246,34 @@ FormData: { file: File }
 - Tailwind CSS purging for minimal bundle size
 - Image optimization with Next.js built-in tools
 
+### Deployment
+
+For detailed deployment instructions, see **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)**.
+
+**Quick Deploy to Vercel:**
+
+```bash
+# 1. Push to GitHub (already configured)
+git push origin main
+
+# 2. Vercel auto-deploys on push
+# Visit your Vercel dashboard to monitor deployment
+
+# 3. Set environment variables in Vercel dashboard
+# - UPLOAD_PASSWORD: Your secure admin password
+```
+
+**Environment Variables:**
+- `UPLOAD_PASSWORD`: Required for admin file uploads
+
 ### Security Features
 
-- Data validation on upload
-- File type verification
-- Size limit enforcement (50MB default)
-- Secure file handling
-- Input sanitization for display
+- **Admin Access**: Password-protected file upload interface
+- **Data Validation**: File type and format verification
+- **Size Limits**: 50MB maximum file size
+- **Secure Storage**: Uploaded files backed up with encryption
+- **Input Sanitization**: All user inputs validated and sanitized
+- **Private Repository**: Code accessible only to authorized collaborators
 
 ### Browser Support
 

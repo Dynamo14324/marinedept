@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "env": {
+    "UPLOAD_PASSWORD": {
+      "description": "Admin password for Excel file uploads (set in Vercel dashboard)"
+    }
+  },
+  "functions": {
+    "app/actions/upload-excel.ts": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "app/api/**/*.ts": {
+      "memory": 512,
+      "maxDuration": 30
+    }
+  },
+  "public": true,
+  "headers": [
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/data/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "max-age=3600"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/admin",
+      "destination": "/admin/upload",
+      "permanent": false
+    }
+  ]
+}

@@ -22,9 +22,11 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/', label: 'Dashboard', icon: <BarChart3 className="w-5 h-5" /> },
-  { href: '/analytics', label: 'Analytics', icon: <TrendingUp className="w-5 h-5" /> },
+  { href: '/audits', label: 'Audit Performance', icon: <TrendingUp className="w-5 h-5" /> },
+  { href: '/analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
   { href: '/documents', label: 'Documents', icon: <FileText className="w-5 h-5" /> },
   { href: '/export', label: 'Export', icon: <Download className="w-5 h-5" /> },
+  { href: '/admin/upload', label: 'Admin Upload', icon: <Settings className="w-5 h-5" /> },
   { href: '/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
 ]
 

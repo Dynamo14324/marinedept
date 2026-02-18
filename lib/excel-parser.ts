@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { AuditYearData, VesselRecord, AuditRecord, DeficiencyRecord } from '@/types/audit-data'
 
 export interface ParsedExcelData {
   sheets: Record<string, Record<string, unknown>[]>
@@ -6,9 +7,13 @@ export interface ParsedExcelData {
     fileName: string
     sheetNames: string[]
     rowCounts: Record<string, number>
+    year?: number
   }
 }
 
+/**
+ * Parse an Excel file and return structured data
+ */
 export async function parseExcelFile(file: File): Promise<ParsedExcelData> {
   const arrayBuffer = await file.arrayBuffer()
   const workbook = XLSX.read(arrayBuffer, { cellFormulas: false })
@@ -37,14 +42,92 @@ export async function parseExcelFile(file: File): Promise<ParsedExcelData> {
     rowCounts[sheetName] = rows.length
   }
 
+  // Extract year from filename (e.g., "2024-IAnSISCHEDULE n Performances.xlsx" -> 2024)
+  const yearMatch = file.name.match(/(\d{4})/)
+  const year = yearMatch ? parseInt(yearMatch[1]) : undefined
+
   return {
     sheets,
     metadata: {
       fileName: file.name,
       sheetNames: workbook.SheetNames,
       rowCounts,
+      year,
     },
   }
+}
+
+/**
+ * Transform parsed Excel sheets into structured AuditYearData
+ */
+export function transformToAuditData(parsed: ParsedExcelData): AuditYearData | null {
+  const { sheets, metadata } = parsed
+  const year = metadata.year
+
+  if (!year) {
+    console.warn('[v0] Unable to extract year from filename:', metadata.fileName)
+    return null
+  }
+
+  const dryData = transformVesselData(sheets['Dry Data'] || [], 'Dry')
+  const tankerData = transformVesselData(sheets['Tanker Data'] || [], 'Tanker')
+  const auditComparison = transformAuditComparison(sheets['Int. Audit Category'] || [])
+  const safetyInspection = transformSafetyInspection(sheets['Saf. Insp. category'] || [])
+
+  return {
+    year,
+    dryData,
+    tankerData,
+    auditComparison,
+    safetyInspection,
+  }
+}
+
+/**
+ * Transform raw vessel data into standardized VesselRecord format
+ */
+function transformVesselData(rows: Record<string, unknown>[], fleetType: 'Dry' | 'Tanker'): VesselRecord[] {
+  return rows
+    .filter(row => row && typeof row === 'object' && Object.keys(row).length > 0)
+    .map(row => {
+      const obj = row as Record<string, unknown>
+      return {
+        vesselName: (obj['Vessel'] || obj['Vessel Name'] || '') as string,
+        fleetType,
+        auditDate: (obj['Audit Date'] || obj['Date'] || '') as string,
+        auditor: (obj['Auditor'] || obj['Audited By'] || '') as string,
+        nonConformities: parseNumber(obj['NC'] || obj['Non-Conformities'] || 0),
+        observations: parseNumber(obj['Observations'] || obj['Obs'] || 0),
+        auditType: (obj['Audit Type'] || obj['Type'] || '') as string,
+        findings: (obj['Findings'] || '') as string,
+      }
+    })
+}
+
+/**
+ * Transform audit category data
+ */
+function transformAuditComparison(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+  return rows.filter(row => row && typeof row === 'object' && Object.keys(row).length > 0)
+}
+
+/**
+ * Transform safety inspection data
+ */
+function transformSafetyInspection(rows: Record<string, unknown>[]): Record<string, unknown>[] {
+  return rows.filter(row => row && typeof row === 'object' && Object.keys(row).length > 0)
+}
+
+/**
+ * Safe number parsing
+ */
+function parseNumber(value: unknown): number {
+  if (typeof value === 'number') return value
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value)
+    return isNaN(parsed) ? 0 : parsed
+  }
+  return 0
 }
 
 export function extractFinancialData(sheetData: Record<string, unknown>[]) {
