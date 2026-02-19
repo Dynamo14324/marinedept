@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marine Performance Intelligence Dashboard</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="hero">
+    <h1>Marine Department PowerBI-Style Dashboard</h1>
+    <p>Upload 2023/2024/2025 files (including H1 2025 updates). Dashboard auto-builds Fleet, Tanker, and Bulker views with matched bar colors.</p>
+  </header>
+
+  <main class="container">
+    <section class="panel upload-panel">
+      <div class="upload-header">
+        <h2>Multi-Year Excel Upload</h2>
+        <div class="control-row">
+          <label>Period
+            <select id="periodFilter">
+              <option value="ALL">All Year</option>
+              <option value="H1">H1 (Jan-Jun)</option>
+            </select>
+          </label>
+          <button id="exportBtn" class="btn secondary" disabled>Export Dashboard JSON</button>
+        </div>
+      </div>
+      <label class="dropzone" for="excelInput">
+        <input id="excelInput" type="file" accept=".xlsx,.xls" multiple />
+        <span>Drop or choose Excel files (2023 / 2024 / 2025)</span>
+      </label>
+      <div id="fileBadges" class="badge-wrap"></div>
+      <div id="sourcePanel" class="source-panel"></div>
+    </section>
+
+    <section class="kpi-grid" id="kpiGrid"></section>
+
+    <section class="panel">
+      <h2>Fleet - Mandatory Graph Set</h2>
+      <div class="chart-grid">
+        <article class="chart-card"><h3>Fleet Yearly (NC / Vessels / Audits + NC×Insp)</h3><canvas id="fleetYearlyChart"></canvas></article>
+        <article class="chart-card"><h3>Fleet Quarterly (Vessels / NC / Audits + Avg NC/Audit)</h3><canvas id="fleetQuarterlyChart"></canvas></article>
+        <article class="chart-card"><h3>Fleet Category NC Rate Comparison</h3><canvas id="fleetCategoryChart"></canvas></article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Tanker - Mandatory Graph Set</h2>
+      <div class="chart-grid">
+        <article class="chart-card"><h3>Tanker Yearly (NC / Vessels / Audits + NC×Insp)</h3><canvas id="tankerYearlyChart"></canvas></article>
+        <article class="chart-card"><h3>Tanker Quarterly (Vessels / NC / Audits + Avg NC/Audit)</h3><canvas id="tankerQuarterlyChart"></canvas></article>
+        <article class="chart-card"><h3>Tanker Category NC Rate Comparison</h3><canvas id="tankerCategoryChart"></canvas></article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Bulker (Dry) - Mandatory Graph Set</h2>
+      <div class="chart-grid">
+        <article class="chart-card"><h3>Bulker Yearly (NC / Vessels / Audits + NC×Insp)</h3><canvas id="dryYearlyChart"></canvas></article>
+        <article class="chart-card"><h3>Bulker Quarterly (Vessels / NC / Audits + Avg NC/Audit)</h3><canvas id="dryQuarterlyChart"></canvas></article>
+        <article class="chart-card"><h3>Bulker Category NC Rate Comparison</h3><canvas id="dryCategoryChart"></canvas></article>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Year-over-Year Comparison</h2>
+      <div id="comparisonTableWrap"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Auto-Generated Sheet Analytics (2025 included)</h2>
+      <p class="muted">All loaded sheets generate additional charts automatically; if 2025 is uploaded, its sheet charts are included.</p>
+      <div id="sheetChartGrid" class="chart-grid"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
