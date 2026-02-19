@@ -28,3 +28,9 @@ vercel --prod
 - `vercel.json` is included for clean URL and headers.
 - File uploads stay browser-local; Excel files are **not** uploaded to a backend.
 - To update dashboard data, users re-upload updated Excel files in the UI.
+
+
+## Troubleshooting
+- If Vercel shows `404: NOT_FOUND`, ensure Project Settings → Root Directory points to this repo root and redeploy latest commit.
+- This repo includes a fallback route in `vercel.json` so any unmatched path rewrites to `/index.html`.
+- If deployment was created before `vercel.json` existed, trigger a fresh redeploy from the latest commit.
