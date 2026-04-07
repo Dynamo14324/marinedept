@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowUp, ArrowDown, TrendingFlat } from 'lucide-react'
+import { ArrowUp, ArrowDown, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface KPICardProps {
@@ -40,7 +40,7 @@ export function KPICard({
     if (trend === undefined) return null
     if (trend > 0) return <ArrowUp className="w-4 h-4" />
     if (trend < 0) return <ArrowDown className="w-4 h-4" />
-    return <TrendingFlat className="w-4 h-4" />
+    return <Minus className="w-4 h-4" />
   }
 
   const getTrendColor = () => {

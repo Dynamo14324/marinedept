@@ -72,6 +72,15 @@ pnpm build
 pnpm start
 ```
 
+
+### Environment Variables
+
+Create a `.env.local` file based on `.env.example`.
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `MAX_UPLOAD_MB` | No | `50` | Maximum upload size accepted by `POST /api/process-file`. |
+
 ### Project Structure
 
 ```
@@ -168,6 +177,8 @@ Set the data retention period in Settings. Data older than the specified days wi
 
 Processes uploaded files and returns parsed data with metrics.
 
+- Enforces max file size via `MAX_UPLOAD_MB` (default 50MB).
+
 **Request:**
 ```
 FormData: { file: File }
@@ -183,6 +194,19 @@ FormData: { file: File }
   "validation": {...}
 }
 ```
+
+
+### Deployment (Vercel)
+
+1. Push this repository to GitHub.
+2. Import the project in Vercel.
+3. Set environment variables from `.env.example` in Vercel Project Settings.
+4. Deploy using the default Next.js settings (`vercel.json` is included).
+5. Verify runtime health by opening `/api/health` after deployment.
+
+#### GET /api/health
+
+Simple readiness probe returning service status, timestamp, and uptime.
 
 ### Performance Optimizations
 

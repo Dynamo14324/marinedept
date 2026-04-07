@@ -11,7 +11,7 @@ export interface ParsedExcelData {
 
 export async function parseExcelFile(file: File): Promise<ParsedExcelData> {
   const arrayBuffer = await file.arrayBuffer()
-  const workbook = XLSX.read(arrayBuffer, { cellFormulas: false })
+  const workbook = XLSX.read(arrayBuffer, { cellFormula: false })
   
   const sheets: Record<string, Record<string, unknown>[]> = {}
   const rowCounts: Record<string, number> = {}
