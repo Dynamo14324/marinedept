@@ -3,6 +3,7 @@ import { parseExcelFile, calculateMetrics } from '@/lib/excel-parser'
 import { parseCSVFile, normalizeCSVData } from '@/lib/csv-parser'
 import { parsePDFFile, extractKeyMetrics } from '@/lib/pdf-parser'
 import { validateFinancialData, getColumnStats } from '@/lib/data-validator'
+import { env } from '@/lib/env'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,6 +14,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'No file provided' },
         { status: 400 }
+      )
+    }
+
+
+    if (file.size === 0) {
+      return NextResponse.json(
+        { error: 'Uploaded file is empty' },
+        { status: 400 }
+      )
+    }
+
+    const maxUploadBytes = env.maxUploadMb * 1024 * 1024
+    if (file.size > maxUploadBytes) {
+      return NextResponse.json(
+        { error: `File exceeds ${env.maxUploadMb}MB limit` },
+        { status: 413 }
       )
     }
 
@@ -40,7 +57,7 @@ export async function POST(request: NextRequest) {
       })
     } else {
       return NextResponse.json(
-        { error: 'Unsupported file type' },
+        { error: 'Unsupported file type. Allowed: .xlsx, .xls, .csv, .pdf' },
         { status: 400 }
       )
     }

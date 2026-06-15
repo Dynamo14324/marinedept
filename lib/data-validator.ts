@@ -138,8 +138,9 @@ export function getColumnStats(
   }
 
   if (numValues.length > 0) {
-    stats.sum = numValues.reduce((a, b) => a + b, 0)
-    stats.avg = stats.sum / numValues.length
+    const sum = numValues.reduce((a, b) => a + b, 0)
+    stats.sum = sum
+    stats.avg = sum / numValues.length
     stats.min = Math.min(...numValues)
     stats.max = Math.max(...numValues)
   }

@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 
 interface ExportOptions {
   fileName?: string
@@ -30,13 +30,13 @@ export async function exportToExcel(
 
   // Style header row
   const headerRow = worksheet.getRow(1)
-  headerRow.font = { bold: true, color: { rgb: 'FFFFFFFF' } }
+  headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } }
   headerRow.fill = {
     type: 'pattern',
     pattern: 'solid',
-    fgColor: { rgb: 'FF0B4B6D' }, // Ocean blue
+    fgColor: { argb: 'FF0B4B6D' }, // Ocean blue
   }
-  headerRow.alignment = { horizontal: 'center', vertical: 'center' }
+  headerRow.alignment = { horizontal: 'center', vertical: 'middle' }
 
   // Add data rows
   data.forEach(row => {
@@ -47,12 +47,14 @@ export async function exportToExcel(
   // Auto-size columns
   worksheet.columns.forEach(column => {
     let maxLength = 0
-    column.eachCell({ includeEmpty: true }, cell => {
-      const cellLength = String(cell.value).length
-      if (cellLength > maxLength) {
-        maxLength = cellLength
-      }
-    })
+    if (typeof column.eachCell === 'function') {
+      column.eachCell({ includeEmpty: true }, cell => {
+        const cellLength = String(cell.value).length
+        if (cellLength > maxLength) {
+          maxLength = cellLength
+        }
+      })
+    }
     column.width = Math.min(maxLength + 2, 50)
   })
 
@@ -128,7 +130,7 @@ export async function exportToPDF(
   )
 
   // Use autotable plugin
-  pdf.autoTable({
+  autoTable(pdf, {
     head: [headers],
     body: tableData,
     headStyles: {
@@ -144,15 +146,14 @@ export async function exportToPDF(
       fillColor: [30, 40, 50],
     },
     margin: 10,
-    didDrawPage: function (data: { pageCount: number; pageSize: { getHeight: () => number } }) {
-      // Footer
-      const pageSize = data.pageSize
-      const pageCount = data.pageCount
+    didDrawPage: () => {
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const pageCount = pdf.getNumberOfPages()
       pdf.setFontSize(8)
       pdf.text(
         `Page ${pageCount}`,
         pdf.internal.pageSize.getWidth() / 2,
-        pageSize.getHeight() - 10,
+        pageHeight - 10,
         { align: 'center' }
       )
     },
@@ -166,7 +167,7 @@ export function generateSummaryReport(data: Record<string, unknown>[]): string {
   const recordCount = data.length
   const columns = data.length > 0 ? Object.keys(data[0] as Record<string, unknown>) : []
 
-  let report = `Data Export Report
+  const report = `Data Export Report
 ====================
 Generated: ${timestamp}
 Records: ${recordCount}
